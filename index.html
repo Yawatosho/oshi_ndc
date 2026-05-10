@@ -71,8 +71,7 @@
     }
 
     .panel,
-    .preview-wrap,
-    .notes {
+    .preview-wrap {
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: var(--radius);
@@ -97,8 +96,7 @@
       letter-spacing: .04em;
     }
 
-    input[type="text"],
-    select {
+    input[type="text"] {
       width: 100%;
       border: 1px solid rgba(183, 137, 69, .42);
       border-radius: 14px;
@@ -107,17 +105,42 @@
       background: #fffdf8;
       font: inherit;
       outline: none;
-    }
-
-    input[type="text"] {
       font-size: 1.2rem;
       letter-spacing: .06em;
     }
 
-    input[type="text"]:focus,
-    select:focus {
+    input[type="text"]:focus {
       border-color: var(--gold);
       box-shadow: 0 0 0 4px rgba(183, 137, 69, .14);
+    }
+
+    .radio-group {
+      display: grid;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid rgba(183, 137, 69, .28);
+      border-radius: 14px;
+      background: #fffdf8;
+      cursor: pointer;
+    }
+
+    .radio-option input[type="radio"] {
+      margin: 0;
+      accent-color: #0c2d52;
+      transform: scale(1.1);
+      flex: 0 0 auto;
+    }
+
+    .radio-option span {
+      font-size: .98rem;
+      color: var(--ink);
     }
 
     .hint {
@@ -182,19 +205,19 @@
       background: #fffaf2;
     }
 
-    .notes {
-      margin-top: 22px;
-      padding: 18px 22px;
+    .footer-notes {
+      margin-top: 26px;
+      text-align: center;
       font-size: .93rem;
-      line-height: 1.9;
+      line-height: 1.95;
       color: #54473b;
     }
 
-    .notes p {
+    .footer-notes p {
       margin: 0 0 8px;
     }
 
-    .notes p:last-child {
+    .footer-notes p:last-child {
       margin-bottom: 0;
     }
 
@@ -214,11 +237,17 @@
     <div class="layout">
       <section class="panel" aria-label="入力欄">
         <div class="field">
-          <label for="templateSelect">カードデザイン</label>
-          <select id="templateSelect">
-            <option value="classic">シンプル</option>
-            <option value="librarian">司書さんと探偵さん</option>
-          </select>
+          <label>カードデザイン</label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="template" value="classic" checked>
+              <span>シンプル</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="template" value="librarian">
+              <span>司書さんと探偵さん</span>
+            </label>
+          </div>
         </div>
 
         <div class="field">
@@ -240,7 +269,7 @@
       </section>
     </div>
 
-    <section class="notes" aria-label="クレジットと出典">
+    <section class="footer-notes" aria-label="クレジットと出典">
       <p>日本十進分類法のデータは「<a href="https://www.jla.or.jp/committees/bunrui/ndc-data/" target="_blank" rel="noopener noreferrer">日本図書館協会NDC9（CC BY)</a>」を使用させていただいています。</p>
       <p>カードデザイン・コーディングにChatGPTを用いています。</p>
       <p>推しNDCメーカー produced by <a href="https://yawatosho.hateblo.jp/" target="_blank" rel="noopener noreferrer">やわらか図書館学</a></p>
@@ -261,7 +290,7 @@
     const canvas = document.getElementById("cardCanvas");
     const ctx = canvas.getContext("2d");
     const ndcInput = document.getElementById("ndcInput");
-    const templateSelect = document.getElementById("templateSelect");
+    const templateRadios = document.querySelectorAll('input[name="template"]');
     const statusEl = document.getElementById("status");
     const downloadBtn = document.getElementById("downloadBtn");
     const postXBtn = document.getElementById("postXBtn");
@@ -275,6 +304,10 @@
       ink: "#082647",
       gold: "#b78945"
     };
+
+    function getSelectedTemplate() {
+      return document.querySelector('input[name="template"]:checked')?.value || "classic";
+    }
 
     function normalizeNdc(value) {
       return String(value ?? "")
@@ -351,7 +384,7 @@
     }
 
     async function loadTemplate() {
-      const templatePath = TEMPLATE_MAP[templateSelect.value];
+      const templatePath = TEMPLATE_MAP[getSelectedTemplate()];
       try {
         templateImage = await loadImageFromUrl(templatePath);
         imageReady = true;
@@ -504,7 +537,10 @@
       drawCard();
     });
 
-    templateSelect.addEventListener("change", loadTemplate);
+    templateRadios.forEach(radio => {
+      radio.addEventListener("change", loadTemplate);
+    });
+
     downloadBtn.addEventListener("click", downloadPng);
     postXBtn.addEventListener("click", postToX);
 
