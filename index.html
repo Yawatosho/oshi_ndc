@@ -342,19 +342,23 @@
 
     <div class="layout">
       <section class="panel" aria-label="入力欄">
-        <div class="field">
-          <span class="field-title">カードデザイン</span>
-          <div class="radio-group">
-            <label class="radio-option">
-              <input type="radio" name="template" value="classic" checked>
-              <span>シンプル</span>
-            </label>
-            <label class="radio-option">
-              <input type="radio" name="template" value="librarian">
-              <span>司書さんと探偵さん</span>
-            </label>
-          </div>
-        </div>
+<div class="field">
+  <span class="field-title">カードデザイン</span>
+  <div class="radio-group">
+    <label class="radio-option">
+      <input type="radio" name="template" value="classic" checked>
+      <span>シンプル</span>
+    </label>
+    <label class="radio-option">
+      <input type="radio" name="template" value="librarian">
+      <span>司書さんと探偵さん</span>
+    </label>
+    <label class="radio-option">
+      <input type="radio" name="template" value="typo">
+      <span>タイポグラフィ</span>
+    </label>
+  </div>
+</div>
 
         <div class="field">
           <label for="ndcInput">分類番号</label>
@@ -468,10 +472,11 @@
   <script>
     const NDC_JSON_URL = "https://raw.githubusercontent.com/Yawatosho/karuta/refs/heads/main/ndc.json";
 
-    const TEMPLATE_MAP = {
-      classic: "template_classic.png",
-      librarian: "template_librarian.png"
-    };
+const TEMPLATE_MAP = {
+  classic: "template_classic.png",
+  librarian: "template_librarian.png",
+  typo: "template_typo.png"
+};
 
     const NUMBER_FONT = '"Libre Baskerville", serif';
     const JAPANESE_FONT = '"Zen Kaku Gothic New", sans-serif';
