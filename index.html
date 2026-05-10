@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>推しNDCカードメーカー</title>
+  <title>推しNDCメーカー</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,6 +17,7 @@
       --gold: #b78945;
       --shadow: 0 18px 48px rgba(39, 30, 17, .13);
       --radius: 22px;
+      --line: rgba(183, 137, 69, .25);
     }
 
     * { box-sizing: border-box; }
@@ -29,6 +30,12 @@
         radial-gradient(circle at 20% 10%, rgba(255,255,255,.95), transparent 32%),
         linear-gradient(135deg, #fbf7ef 0%, var(--bg) 50%, #efe2cf 100%);
       font-family: "Zen Kaku Gothic New", sans-serif;
+    }
+
+    a {
+      color: #0c4a86;
+      text-decoration: underline;
+      text-underline-offset: 2px;
     }
 
     .app {
@@ -64,9 +71,10 @@
     }
 
     .panel,
-    .preview-wrap {
+    .preview-wrap,
+    .notes {
       background: var(--panel);
-      border: 1px solid rgba(183, 137, 69, .22);
+      border: 1px solid var(--line);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
     }
@@ -89,7 +97,8 @@
       letter-spacing: .04em;
     }
 
-    input[type="text"] {
+    input[type="text"],
+    select {
       width: 100%;
       border: 1px solid rgba(183, 137, 69, .42);
       border-radius: 14px;
@@ -97,12 +106,16 @@
       color: var(--ink);
       background: #fffdf8;
       font: inherit;
-      font-size: 1.2rem;
-      letter-spacing: .06em;
       outline: none;
     }
 
-    input[type="text"]:focus {
+    input[type="text"] {
+      font-size: 1.2rem;
+      letter-spacing: .06em;
+    }
+
+    input[type="text"]:focus,
+    select:focus {
       border-color: var(--gold);
       box-shadow: 0 0 0 4px rgba(183, 137, 69, .14);
     }
@@ -169,12 +182,20 @@
       background: #fffaf2;
     }
 
-    .credit {
-      margin: 14px 0 0;
-      color: #867763;
-      font-size: .82rem;
-      line-height: 1.7;
-      text-align: center;
+    .notes {
+      margin-top: 22px;
+      padding: 18px 22px;
+      font-size: .93rem;
+      line-height: 1.9;
+      color: #54473b;
+    }
+
+    .notes p {
+      margin: 0 0 8px;
+    }
+
+    .notes p:last-child {
+      margin-bottom: 0;
     }
 
     @media (max-width: 900px) {
@@ -186,36 +207,53 @@
 <body>
   <main class="app">
     <header>
-      <h1>推しNDCカードメーカー</h1>
+      <h1>推しNDCメーカー</h1>
       <p class="lead">分類番号を入力すると、NDC番号と分類内容をカード画像に合成して保存できます。</p>
     </header>
 
     <div class="layout">
       <section class="panel" aria-label="入力欄">
         <div class="field">
+          <label for="templateSelect">カードデザイン</label>
+          <select id="templateSelect">
+            <option value="classic">シンプル</option>
+            <option value="librarian">司書さんと探偵さん</option>
+          </select>
+        </div>
+
+        <div class="field">
           <label for="ndcInput">分類番号</label>
           <input id="ndcInput" type="text" inputmode="numeric" autocomplete="off" value="913" placeholder="例：913">
-          <p class="hint">3桁のNDCを入力してください。同じディレクトリの <strong>template.png</strong> を背景に使用します。</p>
+          <p class="hint">3桁のNDCを入力してください。</p>
         </div>
 
         <div class="status" id="status">読み込み中です。</div>
 
         <div class="buttons">
           <button class="primary" id="downloadBtn" type="button">PNGで保存</button>
-          <button class="secondary" id="shareBtn" type="button">画像を共有</button>
+          <button class="secondary" id="postXBtn" type="button">Xへ投稿</button>
         </div>
       </section>
 
       <section class="preview-wrap" aria-label="カードプレビュー">
         <canvas id="cardCanvas" width="1648" height="928"></canvas>
-        <p class="credit">template.png と NDCデータを読み込んで、ブラウザ上で画像を生成します。</p>
       </section>
     </div>
+
+    <section class="notes" aria-label="クレジットと出典">
+      <p>日本十進分類法のデータは「<a href="https://www.jla.or.jp/committees/bunrui/ndc-data/" target="_blank" rel="noopener noreferrer">日本図書館協会NDC9（CC BY)</a>」を使用させていただいています。</p>
+      <p>カードデザイン・コーディングにChatGPTを用いています。</p>
+      <p>推しNDCメーカー produced by <a href="https://yawatosho.hateblo.jp/" target="_blank" rel="noopener noreferrer">やわらか図書館学</a></p>
+    </section>
   </main>
 
   <script>
     const NDC_JSON_URL = "https://raw.githubusercontent.com/Yawatosho/karuta/refs/heads/main/ndc.json";
-    const TEMPLATE_URL = "template.png";
+
+    const TEMPLATE_MAP = {
+      classic: "template_classic.png",
+      librarian: "template_librarian.png"
+    };
 
     const NUMBER_FONT = '"Libre Baskerville", serif';
     const JAPANESE_FONT = '"Zen Kaku Gothic New", sans-serif';
@@ -223,9 +261,10 @@
     const canvas = document.getElementById("cardCanvas");
     const ctx = canvas.getContext("2d");
     const ndcInput = document.getElementById("ndcInput");
+    const templateSelect = document.getElementById("templateSelect");
     const statusEl = document.getElementById("status");
     const downloadBtn = document.getElementById("downloadBtn");
-    const shareBtn = document.getElementById("shareBtn");
+    const postXBtn = document.getElementById("postXBtn");
 
     let templateImage = null;
     let ndcMap = new Map();
@@ -295,13 +334,11 @@
         ndcMap.clear();
         collectNdcEntries(json);
         dataReady = ndcMap.size > 0;
-        updateStatus();
-        drawCard();
       } catch (error) {
         dataReady = false;
-        statusEl.textContent = "NDCデータの読み込みに失敗しました。通信環境またはJSONのURLをご確認ください。";
-        drawCard();
       }
+      updateStatus();
+      drawCard();
     }
 
     function loadImageFromUrl(url) {
@@ -314,8 +351,9 @@
     }
 
     async function loadTemplate() {
+      const templatePath = TEMPLATE_MAP[templateSelect.value];
       try {
-        templateImage = await loadImageFromUrl(TEMPLATE_URL);
+        templateImage = await loadImageFromUrl(templatePath);
         imageReady = true;
       } catch (error) {
         templateImage = null;
@@ -330,7 +368,7 @@
       const label = ndcMap.get(code);
 
       if (!imageReady) {
-        statusEl.textContent = "template.png を読み込めませんでした。同じディレクトリに配置してください。";
+        statusEl.textContent = "テンプレート画像を読み込めませんでした。ファイル名をご確認ください。";
       } else if (!dataReady) {
         statusEl.textContent = "NDCデータを読み込み中です。";
       } else if (code.length !== 3) {
@@ -343,7 +381,7 @@
 
       const canOutput = imageReady && code.length === 3;
       downloadBtn.disabled = !canOutput;
-      shareBtn.disabled = !canOutput;
+      postXBtn.disabled = !canOutput;
     }
 
     function fitText(text, maxWidth, initialSize, fontFamily, weight = 700, minSize = 30) {
@@ -392,7 +430,6 @@
     }
 
     function drawTopNumber(code) {
-      // 雛形に「私の推しNDCは」「です！」が印字済みの前提で、数字のみ描画
       drawCenteredText(code, 969, 132, {
         fontSize: 72,
         minSize: 40,
@@ -444,7 +481,7 @@
       });
     }
 
-    async function downloadPng() {
+    function downloadPng() {
       drawCard();
       const code = normalizeNdc(ndcInput.value) || "ndc";
       const link = document.createElement("a");
@@ -453,29 +490,11 @@
       link.click();
     }
 
-    async function shareImage() {
-      drawCard();
-      const code = normalizeNdc(ndcInput.value) || "ndc";
-
-      canvas.toBlob(async blob => {
-        if (!blob) return;
-        const file = new File([blob], `oshi-ndc-${code}.png`, { type: "image/png" });
-
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({
-              title: "推しNDCカード",
-              text: `私の推しNDCは${code}です！`,
-              files: [file]
-            });
-          } catch (e) {
-            // 共有キャンセル時は何もしない
-          }
-        } else {
-          await downloadPng();
-          statusEl.textContent = "このブラウザでは直接共有できないため、PNGを保存しました。";
-        }
-      }, "image/png");
+    function postToX() {
+      const code = normalizeNdc(ndcInput.value) || "---";
+      const postText = `私の推しNDCは${code}です！\n#推しNDCメーカー\n${location.href}`;
+      const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(postText)}`;
+      window.open(url, "_blank", "noopener,noreferrer");
     }
 
     ndcInput.addEventListener("input", () => {
@@ -485,12 +504,13 @@
       drawCard();
     });
 
+    templateSelect.addEventListener("change", loadTemplate);
     downloadBtn.addEventListener("click", downloadPng);
-    shareBtn.addEventListener("click", shareImage);
+    postXBtn.addEventListener("click", postToX);
 
     async function init() {
       downloadBtn.disabled = true;
-      shareBtn.disabled = true;
+      postXBtn.disabled = true;
       await document.fonts.ready;
       loadTemplate();
       loadNdcData();
