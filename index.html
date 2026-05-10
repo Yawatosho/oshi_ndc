@@ -88,7 +88,8 @@
       margin-bottom: 18px;
     }
 
-    label {
+    label,
+    .field-title {
       display: block;
       margin-bottom: 8px;
       color: var(--ink);
@@ -192,6 +193,111 @@
       border: 1px solid rgba(183, 137, 69, .36);
     }
 
+    details.advanced {
+      margin-top: 18px;
+      border-top: 1px solid rgba(183, 137, 69, .22);
+      padding-top: 14px;
+    }
+
+    details.advanced summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      cursor: pointer;
+      color: var(--ink);
+      font-weight: 700;
+      letter-spacing: .04em;
+      list-style: none;
+      user-select: none;
+    }
+
+    details.advanced summary::-webkit-details-marker { display: none; }
+
+    details.advanced summary::after {
+      content: "＋";
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #fffaf0;
+      border: 1px solid rgba(183, 137, 69, .35);
+      color: #805d26;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    details.advanced[open] summary::after {
+      content: "−";
+    }
+
+    .advanced-body {
+      padding-top: 14px;
+    }
+
+    .adjust-group {
+      padding: 14px 0;
+      border-top: 1px dashed rgba(183, 137, 69, .24);
+    }
+
+    .adjust-group:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .adjust-title {
+      margin: 0 0 10px;
+      color: var(--ink);
+      font-size: .94rem;
+      font-weight: 700;
+    }
+
+    .adjust-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .control label {
+      margin-bottom: 4px;
+      color: #6f604f;
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+
+    .control input[type="number"] {
+      width: 100%;
+      border: 1px solid rgba(183, 137, 69, .35);
+      border-radius: 10px;
+      padding: 8px 9px;
+      background: #fffdf8;
+      color: var(--ink);
+      font: inherit;
+      font-size: .9rem;
+      outline: none;
+    }
+
+    .control input[type="number"]:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(183, 137, 69, .12);
+    }
+
+    .reset-row {
+      margin-top: 12px;
+    }
+
+    .small-button {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: .88rem;
+      background: #fffaf0;
+      color: var(--ink);
+      border: 1px solid rgba(183, 137, 69, .36);
+      box-shadow: none;
+    }
+
     .preview-wrap {
       padding: 16px;
       overflow: auto;
@@ -237,7 +343,7 @@
     <div class="layout">
       <section class="panel" aria-label="入力欄">
         <div class="field">
-          <label>カードデザイン</label>
+          <span class="field-title">カードデザイン</span>
           <div class="radio-group">
             <label class="radio-option">
               <input type="radio" name="template" value="classic" checked>
@@ -262,6 +368,89 @@
           <button class="primary" id="downloadBtn" type="button">PNGで保存</button>
           <button class="secondary" id="postXBtn" type="button">Xへ投稿</button>
         </div>
+
+        <details class="advanced">
+          <summary>詳細設定</summary>
+          <div class="advanced-body">
+            <div class="adjust-group">
+              <p class="adjust-title">上部の数字</p>
+              <div class="adjust-grid">
+                <div class="control">
+                  <label for="topX">左右</label>
+                  <input id="topX" class="adjust-input" type="number" value="969" step="1">
+                </div>
+                <div class="control">
+                  <label for="topY">上下</label>
+                  <input id="topY" class="adjust-input" type="number" value="132" step="1">
+                </div>
+                <div class="control">
+                  <label for="topSize">サイズ</label>
+                  <input id="topSize" class="adjust-input" type="number" value="72" min="20" step="1">
+                </div>
+                <div class="control">
+                  <label for="topMaxWidth">最大幅</label>
+                  <input id="topMaxWidth" class="adjust-input" type="number" value="200" min="20" step="1">
+                </div>
+              </div>
+            </div>
+
+            <div class="adjust-group">
+              <p class="adjust-title">中央の大きい数字</p>
+              <div class="adjust-grid">
+                <div class="control">
+                  <label for="mainX">左右</label>
+                  <input id="mainX" class="adjust-input" type="number" value="824" step="1">
+                </div>
+                <div class="control">
+                  <label for="mainY">上下</label>
+                  <input id="mainY" class="adjust-input" type="number" value="446" step="1">
+                </div>
+                <div class="control">
+                  <label for="mainSize">サイズ</label>
+                  <input id="mainSize" class="adjust-input" type="number" value="410" min="100" step="1">
+                </div>
+                <div class="control">
+                  <label for="mainMaxWidth">最大幅</label>
+                  <input id="mainMaxWidth" class="adjust-input" type="number" value="860" min="100" step="1">
+                </div>
+              </div>
+            </div>
+
+            <div class="adjust-group">
+              <p class="adjust-title">分類内容</p>
+              <div class="adjust-grid">
+                <div class="control">
+                  <label for="labelX">左右</label>
+                  <input id="labelX" class="adjust-input" type="number" value="824" step="1">
+                </div>
+                <div class="control">
+                  <label for="labelY">上下</label>
+                  <input id="labelY" class="adjust-input" type="number" value="748" step="1">
+                </div>
+                <div class="control">
+                  <label for="labelSize">サイズ</label>
+                  <input id="labelSize" class="adjust-input" type="number" value="82" min="20" step="1">
+                </div>
+                <div class="control">
+                  <label for="labelMaxWidth">最大幅</label>
+                  <input id="labelMaxWidth" class="adjust-input" type="number" value="980" min="100" step="1">
+                </div>
+                <div class="control">
+                  <label for="labelLetterSpacingShort">字間・短い語</label>
+                  <input id="labelLetterSpacingShort" class="adjust-input" type="number" value="10" step="1">
+                </div>
+                <div class="control">
+                  <label for="labelLetterSpacingLong">字間・長い語</label>
+                  <input id="labelLetterSpacingLong" class="adjust-input" type="number" value="3" step="1">
+                </div>
+              </div>
+            </div>
+
+            <div class="reset-row">
+              <button class="small-button" id="resetAdjustBtn" type="button">位置とサイズを初期値に戻す</button>
+            </div>
+          </div>
+        </details>
       </section>
 
       <section class="preview-wrap" aria-label="カードプレビュー">
@@ -287,6 +476,23 @@
     const NUMBER_FONT = '"Libre Baskerville", serif';
     const JAPANESE_FONT = '"Zen Kaku Gothic New", sans-serif';
 
+    const DEFAULT_ADJUST = {
+      topX: 969,
+      topY: 132,
+      topSize: 72,
+      topMaxWidth: 200,
+      mainX: 824,
+      mainY: 446,
+      mainSize: 410,
+      mainMaxWidth: 860,
+      labelX: 824,
+      labelY: 748,
+      labelSize: 82,
+      labelMaxWidth: 980,
+      labelLetterSpacingShort: 10,
+      labelLetterSpacingLong: 3
+    };
+
     const canvas = document.getElementById("cardCanvas");
     const ctx = canvas.getContext("2d");
     const ndcInput = document.getElementById("ndcInput");
@@ -294,6 +500,8 @@
     const statusEl = document.getElementById("status");
     const downloadBtn = document.getElementById("downloadBtn");
     const postXBtn = document.getElementById("postXBtn");
+    const resetAdjustBtn = document.getElementById("resetAdjustBtn");
+    const adjustInputs = document.querySelectorAll(".adjust-input");
 
     let templateImage = null;
     let ndcMap = new Map();
@@ -307,6 +515,24 @@
 
     function getSelectedTemplate() {
       return document.querySelector('input[name="template"]:checked')?.value || "classic";
+    }
+
+    function getAdjustValue(id) {
+      const input = document.getElementById(id);
+      const value = Number(input?.value);
+      return Number.isFinite(value) ? value : DEFAULT_ADJUST[id];
+    }
+
+    function getAdjust() {
+      return Object.fromEntries(Object.keys(DEFAULT_ADJUST).map(key => [key, getAdjustValue(key)]));
+    }
+
+    function resetAdjust() {
+      for (const [key, value] of Object.entries(DEFAULT_ADJUST)) {
+        const input = document.getElementById(key);
+        if (input) input.value = value;
+      }
+      drawCard();
     }
 
     function normalizeNdc(value) {
@@ -462,14 +688,14 @@
       ctx.textAlign = "center";
     }
 
-    function drawTopNumber(code) {
-      drawCenteredText(code, 969, 132, {
-        fontSize: 72,
+    function drawTopNumber(code, adjust) {
+      drawCenteredText(code, adjust.topX, adjust.topY, {
+        fontSize: adjust.topSize,
         minSize: 40,
         fontFamily: NUMBER_FONT,
         weight: 700,
         color: COLORS.gold,
-        maxWidth: 200,
+        maxWidth: adjust.topMaxWidth,
         baseline: "middle"
       });
     }
@@ -477,6 +703,7 @@
     function drawCard() {
       const code = normalizeNdc(ndcInput.value) || "---";
       const label = ndcMap.get(code) || "";
+      const adjust = getAdjust();
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -490,26 +717,26 @@
         ctx.strokeRect(28, 28, canvas.width - 56, canvas.height - 56);
       }
 
-      drawTopNumber(code);
+      drawTopNumber(code, adjust);
 
-      drawCenteredText(code, 824, 446, {
-        fontSize: 410,
-        minSize: 260,
+      drawCenteredText(code, adjust.mainX, adjust.mainY, {
+        fontSize: adjust.mainSize,
+        minSize: 120,
         fontFamily: NUMBER_FONT,
         weight: 700,
         color: COLORS.ink,
-        maxWidth: 860,
+        maxWidth: adjust.mainMaxWidth,
         baseline: "middle"
       });
 
-      drawCenteredText(label || "分類内容", 824, 748, {
-        fontSize: 82,
-        minSize: 36,
+      drawCenteredText(label || "分類内容", adjust.labelX, adjust.labelY, {
+        fontSize: adjust.labelSize,
+        minSize: 30,
         fontFamily: JAPANESE_FONT,
         weight: 700,
         color: COLORS.ink,
-        letterSpacing: label && label.length <= 8 ? 10 : 3,
-        maxWidth: 980,
+        letterSpacing: label && label.length <= 8 ? adjust.labelLetterSpacingShort : adjust.labelLetterSpacingLong,
+        maxWidth: adjust.labelMaxWidth,
         baseline: "middle"
       });
     }
@@ -541,6 +768,11 @@
       radio.addEventListener("change", loadTemplate);
     });
 
+    adjustInputs.forEach(input => {
+      input.addEventListener("input", drawCard);
+    });
+
+    resetAdjustBtn.addEventListener("click", resetAdjust);
     downloadBtn.addEventListener("click", downloadPng);
     postXBtn.addEventListener("click", postToX);
 
