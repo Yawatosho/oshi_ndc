@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>推しNDCカードメーカー</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #f7f1e7;
+      --panel: rgba(255, 252, 246, .94);
+      --ink: #082647;
+      --gold: #b78945;
+      --shadow: 0 18px 48px rgba(39, 30, 17, .13);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: #263545;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(255,255,255,.95), transparent 32%),
+        linear-gradient(135deg, #fbf7ef 0%, var(--bg) 50%, #efe2cf 100%);
+      font-family: "Zen Kaku Gothic New", sans-serif;
+    }
+
+    .app {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 42px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      color: var(--ink);
+      font-size: clamp(1.7rem, 4vw, 2.7rem);
+      letter-spacing: .06em;
+      font-weight: 700;
+    }
+
+    .lead {
+      margin: 0;
+      line-height: 1.8;
+      font-size: .98rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel,
+    .preview-wrap {
+      background: var(--panel);
+      border: 1px solid rgba(183, 137, 69, .22);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .panel {
+      padding: 22px;
+      position: sticky;
+      top: 18px;
+    }
+
+    .field {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--ink);
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      border: 1px solid rgba(183, 137, 69, .42);
+      border-radius: 14px;
+      padding: 13px 14px;
+      color: var(--ink);
+      background: #fffdf8;
+      font: inherit;
+      font-size: 1.2rem;
+      letter-spacing: .06em;
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 4px rgba(183, 137, 69, .14);
+    }
+
+    .hint {
+      margin: 8px 0 0;
+      color: #7a6c5c;
+      font-size: .86rem;
+      line-height: 1.65;
+    }
+
+    .status {
+      margin: 14px 0 0;
+      min-height: 1.6em;
+      color: #805d26;
+      font-size: .9rem;
+      line-height: 1.6;
+    }
+
+    .buttons {
+      display: grid;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 999px;
+      padding: 13px 18px;
+      cursor: pointer;
+      font-family: "Zen Kaku Gothic New", sans-serif;
+      font-weight: 700;
+      letter-spacing: .06em;
+      transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+    button:disabled { opacity: .46; cursor: not-allowed; transform: none; }
+
+    .primary {
+      color: white;
+      background: linear-gradient(135deg, #0c2d52, #061c35);
+      box-shadow: 0 10px 22px rgba(6, 28, 53, .23);
+    }
+
+    .secondary {
+      color: var(--ink);
+      background: #fffaf0;
+      border: 1px solid rgba(183, 137, 69, .36);
+    }
+
+    .preview-wrap {
+      padding: 16px;
+      overflow: auto;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 16px;
+      background: #fffaf2;
+    }
+
+    .credit {
+      margin: 14px 0 0;
+      color: #867763;
+      font-size: .82rem;
+      line-height: 1.7;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .panel { position: static; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <h1>推しNDCカードメーカー</h1>
+      <p class="lead">分類番号を入力すると、NDC番号と分類内容をカード画像に合成して保存できます。</p>
+    </header>
+
+    <div class="layout">
+      <section class="panel" aria-label="入力欄">
+        <div class="field">
+          <label for="ndcInput">分類番号</label>
+          <input id="ndcInput" type="text" inputmode="numeric" autocomplete="off" value="913" placeholder="例：913">
+          <p class="hint">3桁のNDCを入力してください。同じディレクトリの <strong>template.png</strong> を背景に使用します。</p>
+        </div>
+
+        <div class="status" id="status">読み込み中です。</div>
+
+        <div class="buttons">
+          <button class="primary" id="downloadBtn" type="button">PNGで保存</button>
+          <button class="secondary" id="shareBtn" type="button">画像を共有</button>
+        </div>
+      </section>
+
+      <section class="preview-wrap" aria-label="カードプレビュー">
+        <canvas id="cardCanvas" width="1648" height="928"></canvas>
+        <p class="credit">template.png と NDCデータを読み込んで、ブラウザ上で画像を生成します。</p>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const NDC_JSON_URL = "https://raw.githubusercontent.com/Yawatosho/karuta/refs/heads/main/ndc.json";
+    const TEMPLATE_URL = "template.png";
+
+    const NUMBER_FONT = '"Libre Baskerville", serif';
+    const JAPANESE_FONT = '"Zen Kaku Gothic New", sans-serif';
+
+    const canvas = document.getElementById("cardCanvas");
+    const ctx = canvas.getContext("2d");
+    const ndcInput = document.getElementById("ndcInput");
+    const statusEl = document.getElementById("status");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const shareBtn = document.getElementById("shareBtn");
+
+    let templateImage = null;
+    let ndcMap = new Map();
+    let dataReady = false;
+    let imageReady = false;
+
+    const COLORS = {
+      ink: "#082647",
+      gold: "#b78945"
+    };
+
+    function normalizeNdc(value) {
+      return String(value ?? "")
+        .replace(/[０-９]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
+        .replace(/[^0-9]/g, "")
+        .slice(0, 3);
+    }
+
+    function splitLabel(label) {
+      const text = String(label || "").trim();
+      if (!text) return "";
+      return text
+        .replace(/\s*[・･]\s*/g, "・")
+        .replace(/\s+/g, " ");
+    }
+
+    function collectNdcEntries(node) {
+      if (!node) return;
+
+      if (Array.isArray(node)) {
+        node.forEach(collectNdcEntries);
+        return;
+      }
+
+      if (typeof node === "object") {
+        const codeKeys = ["ndc", "NDC", "code", "number", "id", "分類番号", "class", "value"];
+        const labelKeys = ["label", "name", "title", "subject", "category", "text", "分類", "分類内容", "description"];
+
+        const code = codeKeys.map(k => node[k]).find(v => v !== undefined && v !== null && normalizeNdc(v).length === 3);
+        const label = labelKeys.map(k => node[k]).find(v => typeof v === "string" && v.trim());
+
+        if (code && label) {
+          ndcMap.set(normalizeNdc(code), splitLabel(label));
+        }
+
+        for (const [key, value] of Object.entries(node)) {
+          const keyCode = normalizeNdc(key);
+
+          if (keyCode.length === 3 && typeof value === "string") {
+            ndcMap.set(keyCode, splitLabel(value));
+          } else if (keyCode.length === 3 && value && typeof value === "object") {
+            const nestedLabel = labelKeys.map(k => value[k]).find(v => typeof v === "string" && v.trim());
+            if (nestedLabel) ndcMap.set(keyCode, splitLabel(nestedLabel));
+            collectNdcEntries(value);
+          } else {
+            collectNdcEntries(value);
+          }
+        }
+      }
+    }
+
+    async function loadNdcData() {
+      try {
+        const res = await fetch(NDC_JSON_URL, { cache: "no-store" });
+        if (!res.ok) throw new Error("NDCデータを取得できませんでした。");
+        const json = await res.json();
+        ndcMap.clear();
+        collectNdcEntries(json);
+        dataReady = ndcMap.size > 0;
+        updateStatus();
+        drawCard();
+      } catch (error) {
+        dataReady = false;
+        statusEl.textContent = "NDCデータの読み込みに失敗しました。通信環境またはJSONのURLをご確認ください。";
+        drawCard();
+      }
+    }
+
+    function loadImageFromUrl(url) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = url;
+      });
+    }
+
+    async function loadTemplate() {
+      try {
+        templateImage = await loadImageFromUrl(TEMPLATE_URL);
+        imageReady = true;
+      } catch (error) {
+        templateImage = null;
+        imageReady = false;
+      }
+      updateStatus();
+      drawCard();
+    }
+
+    function updateStatus() {
+      const code = normalizeNdc(ndcInput.value);
+      const label = ndcMap.get(code);
+
+      if (!imageReady) {
+        statusEl.textContent = "template.png を読み込めませんでした。同じディレクトリに配置してください。";
+      } else if (!dataReady) {
+        statusEl.textContent = "NDCデータを読み込み中です。";
+      } else if (code.length !== 3) {
+        statusEl.textContent = "3桁の分類番号を入力してください。";
+      } else if (!label) {
+        statusEl.textContent = `${code} の分類内容が見つかりませんでした。`;
+      } else {
+        statusEl.textContent = `${code}：${label}`;
+      }
+
+      const canOutput = imageReady && code.length === 3;
+      downloadBtn.disabled = !canOutput;
+      shareBtn.disabled = !canOutput;
+    }
+
+    function fitText(text, maxWidth, initialSize, fontFamily, weight = 700, minSize = 30) {
+      let size = initialSize;
+      do {
+        ctx.font = `${weight} ${size}px ${fontFamily}`;
+        if (ctx.measureText(text).width <= maxWidth) return size;
+        size -= 2;
+      } while (size >= minSize);
+      return minSize;
+    }
+
+    function drawCenteredText(text, x, y, options = {}) {
+      const {
+        fontSize = 80,
+        fontFamily = JAPANESE_FONT,
+        weight = 700,
+        color = COLORS.ink,
+        letterSpacing = 0,
+        maxWidth = Infinity,
+        baseline = "middle",
+        minSize = 24
+      } = options;
+
+      const fittedSize = fitText(text, maxWidth, fontSize, fontFamily, weight, minSize);
+      ctx.font = `${weight} ${fittedSize}px ${fontFamily}`;
+      ctx.fillStyle = color;
+      ctx.textAlign = "center";
+      ctx.textBaseline = baseline;
+
+      if (!letterSpacing) {
+        ctx.fillText(text, x, y);
+        return;
+      }
+
+      const chars = [...text];
+      const widths = chars.map(ch => ctx.measureText(ch).width);
+      const totalWidth = widths.reduce((a, b) => a + b, 0) + letterSpacing * Math.max(0, chars.length - 1);
+      let currentX = x - totalWidth / 2;
+      ctx.textAlign = "left";
+      for (let i = 0; i < chars.length; i++) {
+        ctx.fillText(chars[i], currentX, y);
+        currentX += widths[i] + letterSpacing;
+      }
+      ctx.textAlign = "center";
+    }
+
+    function drawTopNumber(code) {
+      // 雛形に「私の推しNDCは」「です！」が印字済みの前提で、数字のみ描画
+      drawCenteredText(code, 969, 132, {
+        fontSize: 72,
+        minSize: 40,
+        fontFamily: NUMBER_FONT,
+        weight: 700,
+        color: COLORS.gold,
+        maxWidth: 200,
+        baseline: "middle"
+      });
+    }
+
+    function drawCard() {
+      const code = normalizeNdc(ndcInput.value) || "---";
+      const label = ndcMap.get(code) || "";
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (templateImage) {
+        ctx.drawImage(templateImage, 0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.fillStyle = "#fffaf1";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = "#d5b47c";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(28, 28, canvas.width - 56, canvas.height - 56);
+      }
+
+      drawTopNumber(code);
+
+      drawCenteredText(code, 824, 446, {
+        fontSize: 410,
+        minSize: 260,
+        fontFamily: NUMBER_FONT,
+        weight: 700,
+        color: COLORS.ink,
+        maxWidth: 860,
+        baseline: "middle"
+      });
+
+      drawCenteredText(label || "分類内容", 824, 748, {
+        fontSize: 82,
+        minSize: 36,
+        fontFamily: JAPANESE_FONT,
+        weight: 700,
+        color: COLORS.ink,
+        letterSpacing: label && label.length <= 8 ? 10 : 3,
+        maxWidth: 980,
+        baseline: "middle"
+      });
+    }
+
+    async function downloadPng() {
+      drawCard();
+      const code = normalizeNdc(ndcInput.value) || "ndc";
+      const link = document.createElement("a");
+      link.download = `oshi-ndc-${code}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }
+
+    async function shareImage() {
+      drawCard();
+      const code = normalizeNdc(ndcInput.value) || "ndc";
+
+      canvas.toBlob(async blob => {
+        if (!blob) return;
+        const file = new File([blob], `oshi-ndc-${code}.png`, { type: "image/png" });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              title: "推しNDCカード",
+              text: `私の推しNDCは${code}です！`,
+              files: [file]
+            });
+          } catch (e) {
+            // 共有キャンセル時は何もしない
+          }
+        } else {
+          await downloadPng();
+          statusEl.textContent = "このブラウザでは直接共有できないため、PNGを保存しました。";
+        }
+      }, "image/png");
+    }
+
+    ndcInput.addEventListener("input", () => {
+      const normalized = normalizeNdc(ndcInput.value);
+      if (ndcInput.value !== normalized) ndcInput.value = normalized;
+      updateStatus();
+      drawCard();
+    });
+
+    downloadBtn.addEventListener("click", downloadPng);
+    shareBtn.addEventListener("click", shareImage);
+
+    async function init() {
+      downloadBtn.disabled = true;
+      shareBtn.disabled = true;
+      await document.fonts.ready;
+      loadTemplate();
+      loadNdcData();
+    }
+
+    init();
+  </script>
+</body>
+</html>
