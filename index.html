@@ -757,7 +757,7 @@ const TEMPLATE_MAP = {
 
     function postToX() {
       const code = normalizeNdc(ndcInput.value) || "---";
-      const postText = `私の推しNDCは${code}です！\n#推しNDCメーカー\n${location.href}`;
+      const postText = `私の推しNDCは${code}です！\n#推しNDCカードメーカー\n${location.href}`;
       const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(postText)}`;
       window.open(url, "_blank", "noopener,noreferrer");
     }
